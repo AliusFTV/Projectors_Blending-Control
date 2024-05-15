@@ -1,57 +1,42 @@
-from PyQt5.QtWidgets import QPushButton, QLabel, QTextEdit, QWidget, QVBoxLayout
-from Raw_Functions.control import Control
+from PyQt5.QtWidgets import QPushButton, QWidget, QVBoxLayout, QTextEdit
+from Raw_Functions.capture import Capture
+from Raw_Functions.render import ImageProcessor
 
 
 class Buttons(QWidget):
+
     def __init__(self):
         super().__init__()
-        self.Control = Control()
-        self.ip = []
 
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
-
-        self.label = QLabel("Статус:")
-        self.layout.addWidget(self.label)
 
         self.text_edit = QTextEdit()
         self.text_edit.setReadOnly(True)
         self.layout.addWidget(self.text_edit)
 
-        self.button_pwon = QPushButton("Включить проекторы")
-        self.button_pwon.clicked.connect(self.pwon)
-        self.layout.addWidget(self.button_pwon)
+        self.btn_check = QPushButton("Check HDMI Connection")
+        self.btn_start = QPushButton("Start Video Processing")
 
-        self.button_pwoff = QPushButton("Выключить проекторы")
-        self.button_pwoff.clicked.connect(self.pwoff)
-        self.layout.addWidget(self.button_pwoff)
+        self.layout.addWidget(self.btn_check)
+        self.layout.addWidget(self.btn_start)
 
-        self.button_discover = QPushButton("Найти проекторы")
-        self.button_discover.clicked.connect(self.discover)
-        self.layout.addWidget(self.button_discover)
+        self.btn_check.clicked.connect(self.check)
+        self.btn_start.clicked.connect(self.start)
 
-        self.button_connect = QPushButton("Подключиться")
-        self.button_connect.clicked.connect(self.connect)
-        self.layout.addWidget(self.button_connect)
+    def check(self):
+        capture_instance = Capture()
+        status = capture_instance.check_hdmi()
+        if status:
+            self.text_edit.append("HDMI Connection: Connected")
+        else:
+            self.text_edit.append("HDMI Connection: Not Connected")
 
-    def pwon(self):
-        self.Control.pw_on()
-        self.text_edit.append("Проектор(ы) включены.")
-
-    def pwoff(self):
-        self.Control.pw_off()
-        self.text_edit.append("Проектор(ы) выключены.")
-
-    def discover(self):
-        ips, names = self.Control.discover()
-        self.ip.append(ips)
-        self.text_edit.clear()
-        self.text_edit.append("Найденные проекторы:")
-        for idx, (Ip, Name) in enumerate(zip(ips, names)):
-            self.text_edit.append(f"{idx + 1}. {Ip} ({Name})")
-
-    def connect(self, ip):
-        self.Control.connect(ip)
-        self.text_edit.clear()
-        self.text_edit.append("Подключено")
-
+    def start(self):
+        capture_instance = Capture()
+        self.text_edit.append("Starting video processing...")
+        processed_video = capture_instance.start_video()
+        adjusted_video = ImageProcessor.adjust_brightness(processed_video)
+        sharpened_video = ImageProcessor.enhance_sharpness(adjusted_video)
+        high_res_video = ImageProcessor.increase_resolution(sharpened_video)
+        self.text_edit.append("Video processing complete")
