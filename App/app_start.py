@@ -14,8 +14,6 @@ class App:
         self.window.layout.addLayout(self.buttons.layout)
         Styles.apply_style(self.window)
 
-        self.projectors = []
-
     def run(self):
         self.window.show()
         sys.exit(self.app.exec_())
